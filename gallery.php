@@ -82,7 +82,7 @@ $images = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <?php
             session_start(); 
             foreach ($images as $image): ?>
-            <?php if (1==1): ?>
+            <?php if (file_exists($image['filepath'])): ?>
             <div>
             <a href="#">
                 <img src="<?=$image['filepath']?>" alt="<?=$image['description']?>" data-id="<?=$image['id']?>" data-title="<?=$image['title']?>" width="300" height="200">
