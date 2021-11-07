@@ -79,19 +79,113 @@ $images = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <p>Welcome to the gallery page! You can view the list of uploaded images below.</p>
         <a href="upload.php" class="upload-image">Upload Image</a>
         <div class="images">
-            <?php foreach ($images as $image): ?>
-            <?php if (file_exists($image['filepath'])): ?>
+            <?php
+            session_start(); 
+            foreach ($images as $image): ?>
+            <?php if (1==1): ?>
+            <div>
             <a href="#">
                 <img src="<?=$image['filepath']?>" alt="<?=$image['description']?>" data-id="<?=$image['id']?>" data-title="<?=$image['title']?>" width="300" height="200">
                 <span><?=$image['description']?></span>
             </a>
+            <!--Likes and Ratings -->
+                <div style="display:flex;">
+                    <?php
+                    $liked_array=array("null");
+                    $likes=0;
+                    $img_id=$image['id'];
+                    $pdo = pdo_connect_mysql();
+                    $stmt = $pdo->query("SELECT likes FROM `images` WHERE id='$img_id'");
+                    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    foreach($rows as $row)
+                    {
+                        $likes=$row['likes'];
+                    }
+                    ?>
+                    
+                    <b>( <?php echo $likes; ?> Likes )</b>
+
+                    <?php
+
+                    if(isset($_SESSION['user_id']))
+                    {
+                        $user_id=$_SESSION['user_id'];
+                        $pdo = pdo_connect_mysql();
+                        $stmt = $pdo->query("SELECT liked FROM `users` WHERE id='$user_id'");
+                        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                        foreach($rows as $row)
+                        {
+                            $liked_array=json_decode($row['liked']);
+                        }
+                    ?>
+
+                    <?php
+
+                        if (in_array($image['id'], $liked_array))
+                        {
+
+                    ?>
+                            <button id="unlike-btn" onClick="remove_like(<?=$image['id']?>)">Unlike</button>
+                    <?php
+                        }
+                        else
+                        {
+                    ?>
+                            <button id="like-btn" onClick="add_like(<?=$image['id']?>)">Like</button>
+
+                    <?php
+                        }
+                    }
+                    ?>
+                </div>
+            </div>
             <?php endif; ?>
             <?php endforeach; ?>
         </div>
     </div>
     </div>
     <div class="image-popup"></div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script>
+    function add_like(id)
+    {
+        $.ajax({
+                type: "POST",
+                url: "add-like.php",
+                data: { id:id },
+                success: function(data) {
+                    console.log(data)
+                    if(data==1)
+                    {
+                        window.location.reload();
+                    }
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+                }
+
+            });
+    }
+
+    function remove_like(id)
+    {
+        $.ajax({
+                type: "POST",
+                url: "remove-like.php",
+                data: { id:id },
+                success: function(data) {
+                    if(data==1)
+                    {
+                        window.location.reload();
+                    }
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+                }
+
+            });
+    }
     // Container we'll use to output the image
     let image_popup = document.querySelector('.image-popup');
     // Iterate the images and apply the onclick event to each individual image

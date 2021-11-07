@@ -21,7 +21,7 @@
       </div>
       <span>or use your email for registration</span>
       <input type="text" placeholder="Name"  name="name"/>
-      <input type="email" placeholder="Email" name="e_mail" />
+      <input type="text" placeholder="Email" name="e_mail" />
       <input type="password" placeholder="Password" name="pass" />
       <input type="submit"  name="register" value="register">
     </form>
@@ -35,7 +35,7 @@
         <a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
       </div>
       <span>or use your account</span>
-      <input type="email" placeholder="Email" name="email" />
+      <input type="text" placeholder="Email" name="email" />
       <input type="password" placeholder="Password" name="pwd" />
       
       <input type= "submit" name="submit" value="submit"> </submit>
@@ -63,16 +63,24 @@
 </html>
 
 <?php
+      session_start();
       include('connect.php');
       if(isset($_POST['submit']))
       {
             $ue_mail=$_POST['email'];
             $pswd=$_POST['pwd'];
            // echo $uname. " ". $pswd;
-        $qry= mysqli_query($con,"SELECT * FROM `reg` WHERE `e_mail` = '$ue_mail' and `pass`='$pswd'");
-        $res=mysqli_fetch_array($qry);
-        $num=mysqli_num_rows($qry);
-        if($num>0)
+        //$qry= mysqli_query($conn,"SELECT * FROM `users` WHERE `username` = '$ue_mail' and `password`='$pswd'");
+        //$res=mysqli_fetch_array($qry);
+        //$num=mysqli_num_rows($qry);
+        $pdo = pdo_connect_mysql();
+        $stmt = $pdo->query("SELECT * FROM `users` WHERE `username` = '$ue_mail' and `password`='$pswd'");
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach($rows as $row)
+        {
+          $_SESSION['user_id']=$row['id'];
+        }
+        if($stmt->rowCount() > 0)
         {
           echo "<script> window.location='index.php'</script>";
         }
